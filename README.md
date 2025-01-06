@@ -115,13 +115,43 @@ mpirun -np 4 ./jetOnPool
 
 ## Contributing
 
-We welcome contributions! Please:
+We welcome contributions! The project uses standardized issue templates to streamline communication and problem-solving. When contributing, please:
 
 1. Fork the repository
 2. Create a feature branch
 3. Submit a Pull Request
 
-For bugs and feature requests, please create an issue.
+### Issue Templates
+
+We provide three types of issue templates to help you contribute effectively:
+
+1. **Bug Reports** (`bug_report.md`):
+   - Detailed reproduction steps
+   - System information
+   - Simulation parameters
+   - Expected vs actual behavior
+   - Relevant outputs and visualizations
+
+2. **Feature Requests** (`feature_request.md`):
+   - Problem description
+   - Proposed solution
+   - Implementation details
+   - Impact assessment
+   - Relevant literature
+
+3. **Questions/Discussions** (`question.md`):
+   - Clear topic statement
+   - Context and background
+   - Related resources
+   - System information
+   - Supporting materials
+
+### External Resources
+
+For additional help and discussions:
+- [Basilisk Forum](http://groups.google.com/d/forum/basilisk-fr): For Basilisk-specific questions
+- [Viscoelastic3D Repository](https://github.com/comphy-lab/Viscoelastic3D): For viscoelastic solver implementation
+- [Physics of Fluids Group](https://pof.tnw.utwente.nl/): For academic collaborations
 
 ## Authors
 
