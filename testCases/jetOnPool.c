@@ -13,13 +13,11 @@
 
 #define FILTERED // Smear density and viscosity jumps
 #include "two-phaseVE.h"
-// #include "two-phase.h"
 
 #define logFile "log-jetOnPool_ViscoElastic.dat"
 
 #include "navier-stokes/conserving.h"
 #include "tension.h"
-// #include "reduced.h"
 
 #define tsnap (1e-2)
 
@@ -36,11 +34,10 @@
 
 int MAXlevel;
 // We -> Weber number
-// Oh -> Solvent Ohnesorge number
-// Oha -> air Ohnesorge number
-// Bo -> Bond number
-// De -> Deborah number
-// Ec -> Elasto-capillary number
+// Re -> Solvent Reynolds number
+// MuR -> air-solvent viscosity ratio
+// Wi -> air-solvent density ratio
+// El -> air-solvent elastic modulus ratio
 
 double We, Re, MuR, Bo, Wi, El, tmax;
 char nameOut[80], dumpFile[80];
@@ -93,7 +90,6 @@ int main(int argc, char const *argv[]) {
 
   lambda1 = Wi, lambda2 = 0.;
   G1 = El, G2 = 0.;
-  // G.x = Bo/We;
   f.sigma = 1.0/We;
 
   run();

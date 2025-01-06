@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Basilisk Forum
+    url: http://groups.google.com/d/forum/basilisk-fr
+    about: For questions specific to Basilisk C implementation and usage
+  - name: Viscoelastic3D Repository
+    url: https://github.com/comphy-lab/Viscoelastic3D
+    about: For questions related to the viscoelastic solver implementation
+  - name: Physics of Fluids Group
+    url: https://pof.tnw.utwente.nl/
+    about: For academic collaborations and research discussions 
