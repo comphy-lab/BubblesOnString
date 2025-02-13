@@ -17,6 +17,8 @@
 
 # Custom executables (add your specific executable names here)
 **/jetOnPool
+**/jetOnly-test
+**/test_snap_axi-bridge
 basilisk/_darcs
 
 # never exclude these files

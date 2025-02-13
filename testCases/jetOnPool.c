@@ -34,12 +34,12 @@
 
 int MAXlevel;
 // We -> Weber number
-// Re -> Solvent Reynolds number
+// Re_s -> Solvent Reynolds number
 // MuR -> air-solvent viscosity ratio
-// Wi -> air-solvent density ratio
-// El -> air-solvent elastic modulus ratio
+// Wi -> Weissberger number
+// El -> elasticity number (this is \tilde{G}*sq(Wi)), El = G\lambda^2/(\rho R^2).
 
-double We, Re, MuR, Bo, Wi, El, tmax;
+double We, Re_s, MuR, Bo, Wi, El, tmax;
 char nameOut[80], dumpFile[80];
 
 // boundary conditions
@@ -68,12 +68,16 @@ int main(int argc, char const *argv[]) {
   L0 = 4e1; //atof(argv[1]);
   MAXlevel = 10; //atoi(argv[2]);
   We = 1e2; //atof(argv[3]);
-  Re = 1e3; //atof(argv[4]);
+  Re_s = 1e3; //atof(argv[4]);
   MuR = 2e-2;
+
   tmax = 1e2; //atof(argv[5]);
 
   Wi = 1e0; //atof(argv[6]);
   El = 1e-2; //atof(argv[7]);
+
+  A12[left] = dirichlet(clamp(f[],0.,1.)*El*(-2e0*y)/Wi);
+  A11[left] = dirichlet(clamp(f[],0.,1.)*(1 + 2*El*sq(-2e0*y)) + (1.0-clamp(f[],0.,1.)));
 
   init_grid (1 << 8);
 
@@ -86,10 +90,9 @@ int main(int argc, char const *argv[]) {
 
 
   rho1 = 1., rho2 = 1e-3;
-  mu1 = 1e0/Re, mu2 = MuR/Re;
-
+  mu1 = 1e0/Re_s, mu2 = muR/Re_s;
   lambda1 = Wi, lambda2 = 0.;
-  G1 = El, G2 = 0.;
+  G1 = El/sq(Wi), G2 = 0.;
   f.sigma = 1.0/We;
 
   run();
@@ -102,6 +105,8 @@ event init (t = 0) {
     fraction (f, union(1-R2(x,y,z)-x/epsilon, x-4e0));
     foreach(){
       u.x[] = x < 1e0 ? f[]*2e0*(1-R2(x,y,z)): 0.;
+      A12[] = clamp(f[],0.,1.)*El*(-2e0*y)/Wi;
+      A11[] = clamp(f[],0.,1.)*(1 + 2*El*sq(-2e0*y))+(1-clamp(f[],0.,1.));
       u.y[] = 0.0;
     }
   }
@@ -132,7 +137,7 @@ event writingFiles (t = 0; t += tsnap; t <= tmax) {
 */
 event end (t = end) {
   if (pid() == 0)
-    fprintf(ferr, "Level %d, We %2.1e, Re %2.1e, MuR %2.1e, Wi %2.1e, El %2.1e\n", MAXlevel, We, Re, MuR, Wi, El);
+    fprintf(ferr, "Level %d, We %2.1e, Re_s %2.1e, MuR %2.1e, Wi %2.1e, El %2.1e\n", MAXlevel, We, Re, MuR, Wi, El);
 }
 
 /**
@@ -155,9 +160,9 @@ event logWriting (i++) {
     }
 
     if (i == 0) {
-      fprintf(ferr, "Level %d, We %2.1e, Re %2.1e, MuR %2.1e, Wi %2.1e, El %2.1e\n", MAXlevel, We, Re, MuR, Wi, El);
+      fprintf(ferr, "Level %d, We %2.1e, Re_s %2.1e, MuR %2.1e, Wi %2.1e, El %2.1e\n", MAXlevel, We, Re_s, MuR, Wi, El);
       fprintf(ferr, "i dt t ke\n");
-      fprintf(fp, "Level %d, We %2.1e, Re %2.1e, MuR %2.1e, Wi %2.1e, El %2.1e\n", MAXlevel, We, Re, MuR, Wi, El);
+      fprintf(fp, "Level %d, We %2.1e, Re_s %2.1e, MuR %2.1e, Wi %2.1e, El %2.1e\n", MAXlevel, We, Re_s, MuR, Wi, El);
       fprintf(fp, "i dt t ke\n");
     }
 
