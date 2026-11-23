@@ -16,13 +16,26 @@ fi
 
 (
     cd -- "$BASILISK"
-    if [[ ! -e config && ! -L config ]]; then
-        case "$(uname -s)" in
-            Darwin) ln -s config.osx config ;;
-            *) ln -s config.gcc config ;;
-        esac
+    case "$(uname -s)" in
+        Darwin) platform_config=config.osx ;;
+        *) platform_config=config.gcc ;;
+    esac
+    # The checkout carries the config link and binaries of the machine that
+    # committed them. Keep a custom config; point a stock one at this platform.
+    current_config="$(readlink config 2>/dev/null || true)"
+    if [[ ! -e config && ! -L config ]] ||
+       [[ "$current_config" == config.osx || "$current_config" == config.gcc ]]; then
+        ln -sfn "$platform_config" config
     fi
-    make all
+    # Binaries built for another platform cannot run here: rebuild from source.
+    if ! ./qcc --version >/dev/null 2>&1; then
+        make clean
+        rm -f ast/grammar  # not removed by "make clean"; make rebuilds it
+    fi
+    # Use the default goal. "make all" is forwarded to ast/interpreter, which
+    # has no such target, and stops the build.
+    make
+    ./qcc --version >/dev/null
 )
 {
     printf 'export PROJECT_ROOT=%q\n' "$PROJECT_ROOT"

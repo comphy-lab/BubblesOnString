@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+import platform
 import shutil
 import subprocess
 import tempfile
@@ -27,6 +28,9 @@ class OfflineBasilisk(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("Basilisk network display is disabled", result.stderr)
         self.assertNotIn("ws_socket_open", result.stdout)
+        # qcc reports #error but carries on, so a declaration that cannot
+        # compile has to survive preprocessing.
+        self.assertIn("basilisk_network_display_is_disabled[-1]", result.stdout)
 
     def test_installer_builds_local_tree_and_does_not_reset(self):
         with tempfile.TemporaryDirectory(prefix="Basilisk build ") as tmp:
@@ -38,7 +42,19 @@ class OfflineBasilisk(unittest.TestCase):
             marker = src / "keep-me"
             marker.touch()
             (src / "config").touch()
-            (src / "Makefile").write_text("all:\n\t@touch built\n")
+            # Like the vendored tree, forward command-line goals to a
+            # subdirectory that only has a default goal.
+            (src / "Makefile").write_text(
+                ".PHONY: all clean sub\n"
+                "all: sub\n"
+                "\t@touch built\n"
+                "\t@printf '#!/bin/sh\\nexit 0\\n' > qcc && chmod +x qcc\n"
+                "sub:\n"
+                "\t@$(MAKE) -C sub $(MAKECMDGOALS)\n"
+                "clean:\n"
+                "\t@touch cleaned\n")
+            (src / "sub").mkdir()
+            (src / "sub/Makefile").write_text("default:\n\t@true\n")
             shutil.copyfile(ROOT / "basilisk/src/display.h", src / "display.h")
 
             rejected = subprocess.run(
@@ -52,8 +68,34 @@ class OfflineBasilisk(unittest.TestCase):
             subprocess.run(["bash", str(installer)], cwd=work,
                            capture_output=True, check=True)
             self.assertTrue((src / "built").exists())
+            self.assertTrue((src / "cleaned").exists())
             self.assertTrue((work / ".project_config").is_file())
             self.assertTrue(marker.exists())
+
+    def test_installer_selects_the_platform_config(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            work = Path(tmp)
+            installer = work / "reset_install_requirements.sh"
+            shutil.copyfile(ROOT / installer.name, installer)
+            src = work / "basilisk/src"
+            src.mkdir(parents=True)
+            (src / "Makefile").write_text(
+                "all:\n\t@printf '#!/bin/sh\\nexit 0\\n' > qcc && chmod +x qcc\n"
+                "clean:\n\t@true\n")
+            shutil.copyfile(ROOT / "basilisk/src/display.h", src / "display.h")
+            expected = ("config.osx" if platform.system() == "Darwin"
+                        else "config.gcc")
+            other = "config.gcc" if expected == "config.osx" else "config.osx"
+            (src / "config").symlink_to(other)
+            subprocess.run(["bash", str(installer)], cwd=work,
+                           capture_output=True, check=True)
+            self.assertEqual(os.readlink(src / "config"), expected)
+
+            (src / "config").unlink()
+            (src / "config").symlink_to("config.custom")
+            subprocess.run(["bash", str(installer)], cwd=work,
+                           capture_output=True, check=True)
+            self.assertEqual(os.readlink(src / "config"), "config.custom")
 
     def test_installer_does_not_build_unhardened_source(self):
         with tempfile.TemporaryDirectory() as tmp:
