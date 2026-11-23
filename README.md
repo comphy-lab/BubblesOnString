@@ -41,20 +41,14 @@ cd BubblesOnString
 
 2. Install Basilisk and set up the environment:
 ```bash
-./reset_install_requirements.sh
+bash reset_install_requirements.sh
 ```
 
 ### Environment Setup
 
-The installation script will:
-- Check for and install Basilisk if not present
-- Configure environment variables
-- Create a `.project_config` file with proper paths
-
-For a clean reinstall:
-```bash
-./reset_install_requirements.sh --hard
-```
+The installation script builds the vendored Basilisk checkout and writes
+`.project_config`. It does not download or replace the checked-in sources.
+For a fresh build, start from a fresh checkout.
 
 ## Project Structure
 
@@ -82,15 +76,15 @@ For a clean reinstall:
 cd testCases
 ```
 
-2. Run with visualization:
-```bash
-CFLAGS=-DDISPLAY=-1 make jetOnPool.tst
-```
-
-3. Run without visualization:
+2. Run the test case:
 ```bash
 make jetOnPool.tst
 ```
+
+Interactive network display is disabled in this vendored Basilisk tree.
+Run simulations without `DISPLAY` and render output offline using a trusted
+Basilisk `view.h` renderer or the project post-processing tools. Do not use
+pre-existing `bview` binaries from an older checkout for interactive viewing.
 
 ### Direct Compilation
 

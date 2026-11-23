@@ -93,3 +93,8 @@ ehthumbs.db
 Thumbs.db
 **/*.windsurfrules
 **/*.cursorrules
+
+# Network viewers are not shipped by this offline-only build.
+/basilisk/src/bview2D
+/basilisk/src/bview2Dm
+/basilisk/src/bview3D
